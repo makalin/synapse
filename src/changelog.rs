@@ -1,6 +1,5 @@
 // use gpui::*; // Commented out for CLI version
 use serde::{Deserialize, Serialize};
-use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChangelogEntry {

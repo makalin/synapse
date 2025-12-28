@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="logo.png" alt="SYNAPSE Logo" width="300"/>
+  <img src="logo.png" alt="SYNAPSE Logo" width="500"/>
   
   # SYNAPSE
   

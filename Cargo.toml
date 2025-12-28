@@ -22,4 +22,3 @@ rlua = "0.19"
 opt-level = 3
 lto = true
 codegen-units = 1
-

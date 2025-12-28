@@ -6,11 +6,11 @@ pub struct Lens {
 }
 
 impl Lens {
-    pub fn new(cx: &mut ViewContext<Lens>) -> View<Self> {
-        cx.new_view(|_cx| Self {
+    pub fn new() -> Self {
+        Self {
             content: String::new(),
             visible: false,
-        })
+        }
     }
 }
 
@@ -18,7 +18,8 @@ impl Render for Lens {
     fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
         div()
             .absolute()
-            .inset_0()
+            .w_full()
+            .h_full()
             .flex()
             .items_center()
             .justify_center()
@@ -48,33 +49,24 @@ impl Render for Lens {
                                     .justify_between()
                                     .items_center()
                                     .child(
-                                        span()
-                                            .text_color(rgb(0xffffff))
-                                            .text("The Lens - Code Editor")
+                                        div()
+                                            .child("The Lens - Code Editor")
                                             .font_weight(FontWeight::BOLD),
                                     )
                                     .child(
-                                        button()
-                                            .text_color(rgb(0xffffff))
-                                            .text("Close (Esc)")
-                                            .on_click(|_, cx| {
-                                                // Close lens - would need to communicate with parent
-                                            }),
+                                        div()
+                                            .child("Close (Esc)")
+                                            .on_click(cx.listener(|this, _, _| {
+                                                this.visible = false;
+                                            })),
                                     ),
                             )
                             .child(
-                                textarea()
+                                div()
                                     .w_full()
                                     .flex_1()
                                     .bg(rgb(0x0a0a0a))
-                                    .text_color(rgb(0xffffff))
-                                    .font_family("Monaco")
-                                    .font_size(px(14.0))
-                                    .placeholder("Start typing your code...")
-                                    .value(self.content.clone())
-                                    .on_input(|_value, _cx| {
-                                        // Handle input
-                                    }),
+                                    .child(self.content.clone()),
                             ),
                     ),
             )

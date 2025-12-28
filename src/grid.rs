@@ -15,15 +15,15 @@ enum GridLayout {
 }
 
 impl Grid {
-    pub fn new(cx: &mut ViewContext<Grid>) -> View<Self> {
-        cx.new_view(|_cx| Self {
+    pub fn new(cx: &mut WindowContext) -> Self {
+        Self {
             terminals: Vec::new(),
             layout: GridLayout::Single,
-        })
+        }
     }
 
     pub fn add_terminal(&mut self, cx: &mut ViewContext<Self>) {
-        let terminal = Terminal::new(cx);
+        let terminal = cx.new_view(|_cx| Terminal::new());
         self.terminals.push(terminal);
         self.update_layout();
         cx.notify();
@@ -49,96 +49,93 @@ impl Render for Grid {
                 .h_full()
                 .items_center()
                 .justify_center()
-                .text_color(rgb(0x666666))
-                .child("Press Cmd+N to create a new terminal");
+                .child("Press Cmd+N to create a new terminal")
+                .into_any();
         }
 
         match self.layout {
-            GridLayout::Single => {
-                div()
-                    .flex()
-                    .w_full()
-                    .h_full()
-                    .child(self.terminals[0].clone())
-            }
-            GridLayout::HorizontalSplit => {
-                div()
-                    .flex()
-                    .w_full()
-                    .h_full()
-                    .flex_row()
-                    .child(
-                        div()
-                            .flex()
-                            .flex_1()
-                            .h_full()
-                            .border_r()
-                            .border_color(rgb(0x333333))
-                            .child(self.terminals[0].clone()),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .flex_1()
-                            .h_full()
-                            .child(self.terminals.get(1).cloned()),
-                    )
-            }
-            GridLayout::VerticalSplit => {
-                div()
-                    .flex()
-                    .w_full()
-                    .h_full()
-                    .flex_col()
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .w_full()
-                            .flex_1()
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_1()
-                                    .h_full()
-                                    .border_r()
-                                    .border_color(rgb(0x333333))
-                                    .child(self.terminals.get(0).cloned()),
-                            )
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_1()
-                                    .h_full()
-                                    .child(self.terminals.get(1).cloned()),
-                            ),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .w_full()
-                            .flex_1()
-                            .border_t()
-                            .border_color(rgb(0x333333))
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_1()
-                                    .h_full()
-                                    .border_r()
-                                    .border_color(rgb(0x333333))
-                                    .child(self.terminals.get(2).cloned()),
-                            )
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_1()
-                                    .h_full()
-                                    .child(self.terminals.get(3).cloned()),
-                            ),
-                    )
-            }
+            GridLayout::Single => div()
+                .flex()
+                .w_full()
+                .h_full()
+                .child(self.terminals[0].clone())
+                .into_any(),
+            GridLayout::HorizontalSplit => div()
+                .flex()
+                .w_full()
+                .h_full()
+                .flex_row()
+                .child(
+                    div()
+                        .flex()
+                        .flex_1()
+                        .h_full()
+                        .border_r_width(px(1.0))
+                        .border_color(rgb(0x333333))
+                        .child(self.terminals[0].clone()),
+                )
+                .child(
+                    div()
+                        .flex()
+                        .flex_1()
+                        .h_full()
+                        .child(self.terminals.get(1).cloned()),
+                )
+                .into_any(),
+            GridLayout::VerticalSplit => div()
+                .flex()
+                .w_full()
+                .h_full()
+                .flex_col()
+                .child(
+                    div()
+                        .flex()
+                        .flex_row()
+                        .w_full()
+                        .flex_1()
+                        .child(
+                            div()
+                                .flex()
+                                .flex_1()
+                                .h_full()
+                                .border_r_width(px(1.0))
+                                .border_color(rgb(0x333333))
+                                .child(self.terminals.get(0).cloned()),
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .flex_1()
+                                .h_full()
+                                .child(self.terminals.get(1).cloned()),
+                        ),
+                )
+                .child(
+                    div()
+                        .flex()
+                        .flex_row()
+                        .w_full()
+                        .flex_1()
+                        .border_t_width(px(1.0))
+                        .border_color(rgb(0x333333))
+                        .child(
+                            div()
+                                .flex()
+                                .flex_1()
+                                .h_full()
+                                .border_r_width(px(1.0))
+                                .border_color(rgb(0x333333))
+                                .child(self.terminals.get(2).cloned()),
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .flex_1()
+                                .h_full()
+                                .child(self.terminals.get(3).cloned()),
+                        ),
+                )
+                .into_any(),
             GridLayout::Quad => {
                 // For more than 4 terminals, use a simple grid
                 div()
@@ -146,27 +143,23 @@ impl Render for Grid {
                     .w_full()
                     .h_full()
                     .flex_col()
-                    .children(
-                        self.terminals
-                            .chunks(2)
-                            .map(|chunk| {
+                    .children(self.terminals.chunks(2).map(|chunk| {
+                        div()
+                            .flex()
+                            .flex_row()
+                            .w_full()
+                            .flex_1()
+                            .children(chunk.iter().map(|term| {
                                 div()
                                     .flex()
-                                    .flex_row()
-                                    .w_full()
                                     .flex_1()
-                                    .children(chunk.iter().map(|term| {
-                                        div()
-                                            .flex()
-                                            .flex_1()
-                                            .h_full()
-                                            .border_r()
-                                            .border_color(rgb(0x333333))
-                                            .child(term.clone())
-                                    }))
-                            })
-                            .collect::<Vec<_>>(),
-                    )
+                                    .h_full()
+                                    .border_r_width(px(1.0))
+                                    .border_color(rgb(0x333333))
+                                    .child(term.clone())
+                            }))
+                    }))
+                    .into_any()
             }
         }
     }

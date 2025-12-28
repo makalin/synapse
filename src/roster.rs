@@ -6,8 +6,8 @@ pub struct Roster {
 }
 
 impl Roster {
-    pub fn new(cx: &mut ViewContext<Roster>) -> View<Self> {
-        cx.new_view(|_cx| Self {
+    pub fn new() -> Self {
+        Self {
             file_tree: vec![
                 "src/".to_string(),
                 "  main.rs".to_string(),
@@ -23,58 +23,54 @@ impl Roster {
                 "Terminal #1".to_string(),
                 "Terminal #2".to_string(),
             ],
-        })
+        }
     }
 }
 
 impl Render for Roster {
-    fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
+    fn render(&mut self, _cx: &mut ViewContext<Self>) -> impl IntoElement {
         div()
             .flex()
             .flex_col()
             .w_full()
             .h_full()
-            .p(px(12.0))
+            .p_4()
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .mb(px(24.0))
+                    .mb_6()
                     .child(
                         div()
-                            .mb(px(8.0))
+                            .mb_2()
                             .text_color(rgb(0x888888))
                             .font_weight(FontWeight::BOLD)
-                            .text("File Tree"),
+                            .child("File Tree"),
                     )
                     .children(self.file_tree.iter().map(|item| {
                         div()
-                            .py(px(2.0))
+                            .py_1()
                             .text_color(rgb(0xcccccc))
-                            .font_family("Monaco")
-                            .font_size(px(11.0))
-                            .text(item)
+                            .child(item.clone())
                     })),
             )
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .mb(px(24.0))
+                    .mb_6()
                     .child(
                         div()
-                            .mb(px(8.0))
+                            .mb_2()
                             .text_color(rgb(0x888888))
                             .font_weight(FontWeight::BOLD)
-                            .text("Active Agents"),
+                            .child("Active Agents"),
                     )
                     .children(self.active_agents.iter().map(|agent| {
                         div()
-                            .py(px(2.0))
+                            .py_1()
                             .text_color(rgb(0x00ff00))
-                            .font_family("Monaco")
-                            .font_size(px(11.0))
-                            .text(agent)
+                            .child(agent.clone())
                     })),
             )
             .child(
@@ -83,26 +79,22 @@ impl Render for Roster {
                     .flex_col()
                     .child(
                         div()
-                            .mb(px(8.0))
+                            .mb_2()
                             .text_color(rgb(0x888888))
                             .font_weight(FontWeight::BOLD)
-                            .text("System Telemetry"),
+                            .child("System Telemetry"),
                     )
                     .child(
                         div()
-                            .py(px(2.0))
+                            .py_1()
                             .text_color(rgb(0xcccccc))
-                            .font_family("Monaco")
-                            .font_size(px(11.0))
-                            .text("CPU: 12%"),
+                            .child("CPU: 12%"),
                     )
                     .child(
                         div()
-                            .py(px(2.0))
+                            .py_1()
                             .text_color(rgb(0xcccccc))
-                            .font_family("Monaco")
-                            .font_size(px(11.0))
-                            .text("RAM: 2.1 GB"),
+                            .child("RAM: 2.1 GB"),
                     ),
             )
     }

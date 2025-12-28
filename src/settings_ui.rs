@@ -1,5 +1,6 @@
 use crate::settings::{AppSettings, SettingsManager};
 use gpui::*;
+// use log;
 
 pub struct SettingsWindow {
     settings_manager: SettingsManager,
@@ -7,14 +8,14 @@ pub struct SettingsWindow {
 }
 
 impl SettingsWindow {
-    pub fn new(cx: &mut ViewContext<Self>) -> View<Self> {
+    pub fn new(cx: &mut ViewContext<Self>) -> Self {
         let settings_manager = SettingsManager::new();
         let temp_settings = settings_manager.get().clone();
 
-        cx.new_view(|_cx| Self {
+        Self {
             settings_manager,
             temp_settings,
-        })
+        }
     }
 
     pub fn save_settings(&mut self, cx: &mut ViewContext<Self>) -> anyhow::Result<()> {
@@ -45,42 +46,39 @@ impl Render for SettingsWindow {
                 div()
                     .flex()
                     .w_full()
-                    .p(px(16.0))
+                    .p_4()
                     .bg(rgb(0x1a1a1a))
-                    .border_b()
+                    .border_b_width(px(1.0))
                     .border_color(rgb(0x333333))
                     .justify_between()
                     .items_center()
                     .child(
-                        span()
-                            .text_color(rgb(0xffffff))
+                        div()
+                            .text_xl()
                             .font_weight(FontWeight::BOLD)
-                            .font_size(px(18.0))
-                            .text("Settings"),
+                            .child("Settings"),
                     )
                     .child(
                         div()
                             .flex()
-                            .gap(px(8.0))
+                            .gap_2()
                             .child(
-                                button()
-                                    .text_color(rgb(0xffffff))
-                                    .text("Reset")
-                                    .on_click(|_, cx| {
-                                        if let Err(e) = self.reset_settings(cx) {
-                                            eprintln!("Failed to reset settings: {}", e);
+                                div()
+                                    .child("Reset")
+                                    .on_click(cx.listener(|this, _, cx| {
+                                        if let Err(e) = this.reset_settings(cx) {
+                                            log::error!("Failed to reset settings: {}", e);
                                         }
-                                    }),
+                                    })),
                             )
                             .child(
-                                button()
-                                    .text_color(rgb(0x00ff00))
-                                    .text("Save")
-                                    .on_click(|_, cx| {
-                                        if let Err(e) = self.save_settings(cx) {
-                                            eprintln!("Failed to save settings: {}", e);
+                                div()
+                                    .child("Save")
+                                    .on_click(cx.listener(|this, _, cx| {
+                                        if let Err(e) = this.save_settings(cx) {
+                                            log::error!("Failed to save settings: {}", e);
                                         }
-                                    }),
+                                    })),
                             ),
                     ),
             )
@@ -97,78 +95,53 @@ impl Render for SettingsWindow {
                         div()
                             .flex()
                             .flex_col()
-                            .w(DefiniteLength::Fraction(0.2))
+                            .w_1_5()
                             .h_full()
                             .bg(rgb(0x0f0f0f))
-                            .border_r()
+                            .border_r_width(px(1.0))
                             .border_color(rgb(0x333333))
-                            .p(px(12.0))
-                            .child(
-                                span()
-                                    .text_color(rgb(0x888888))
-                                    .font_size(px(12.0))
-                                    .text("Categories"),
-                            )
+                            .p_3()
+                            .child(div().text_xs().text_color(rgb(0x888888)).child("Categories"))
                             .child(
                                 div()
                                     .flex()
                                     .flex_col()
-                                    .mt(px(8.0))
-                                    .gap(px(4.0))
+                                    .mt_2()
+                                    .gap_1()
                                     .child(
                                         div()
-                                            .p(px(8.0))
+                                            .p_2()
                                             .bg(rgb(0x1a1a1a))
                                             .rounded_md()
-                                            .child(
-                                                span()
-                                                    .text_color(rgb(0xffffff))
-                                                    .text("Theme"),
-                                            ),
+                                            .child(div().child("Theme")),
                                     )
                                     .child(
                                         div()
-                                            .p(px(8.0))
+                                            .p_2()
                                             .bg(rgb(0x1a1a1a))
                                             .rounded_md()
-                                            .child(
-                                                span()
-                                                    .text_color(rgb(0xffffff))
-                                                    .text("Terminal"),
-                                            ),
+                                            .child(div().child("Terminal")),
                                     )
                                     .child(
                                         div()
-                                            .p(px(8.0))
+                                            .p_2()
                                             .bg(rgb(0x1a1a1a))
                                             .rounded_md()
-                                            .child(
-                                                span()
-                                                    .text_color(rgb(0xffffff))
-                                                    .text("Editor"),
-                                            ),
+                                            .child(div().child("Editor")),
                                     )
                                     .child(
                                         div()
-                                            .p(px(8.0))
+                                            .p_2()
                                             .bg(rgb(0x1a1a1a))
                                             .rounded_md()
-                                            .child(
-                                                span()
-                                                    .text_color(rgb(0xffffff))
-                                                    .text("Agents"),
-                                            ),
+                                            .child(div().child("Agents")),
                                     )
                                     .child(
                                         div()
-                                            .p(px(8.0))
+                                            .p_2()
                                             .bg(rgb(0x1a1a1a))
                                             .rounded_md()
-                                            .child(
-                                                span()
-                                                    .text_color(rgb(0xffffff))
-                                                    .text("UI"),
-                                            ),
+                                            .child(div().child("UI")),
                                     ),
                             ),
                     )
@@ -178,63 +151,44 @@ impl Render for SettingsWindow {
                             .flex()
                             .flex_col()
                             .flex_1()
-                            .p(px(24.0))
-                            .gap(px(24.0))
+                            .p_6()
+                            .gap_6()
                             .child(
                                 // Theme settings
                                 div()
                                     .flex()
                                     .flex_col()
-                                    .gap(px(16.0))
+                                    .gap_4()
                                     .child(
-                                        span()
-                                            .text_color(rgb(0xffffff))
+                                        div()
+                                            .text_lg()
                                             .font_weight(FontWeight::BOLD)
-                                            .font_size(px(16.0))
-                                            .text("Theme"),
+                                            .child("Theme"),
                                     )
                                     .child(
                                         div()
                                             .flex()
                                             .flex_col()
-                                            .gap(px(8.0))
+                                            .gap_2()
+                                            .child(div().child("Background Color"))
                                             .child(
-                                                label()
-                                                    .text_color(rgb(0xcccccc))
-                                                    .text("Background Color"),
-                                            )
-                                            .child(
-                                                input()
-                                                    .w(px(200.0))
+                                                div()
+                                                    .w_1_2()
                                                     .bg(rgb(0x1a1a1a))
-                                                    .text_color(rgb(0xffffff))
-                                                    .value(self.temp_settings.theme.background.clone())
-                                                    .on_input(|value, cx| {
-                                                        self.temp_settings.theme.background = value;
-                                                        cx.notify();
-                                                    }),
+                                                    .child(self.temp_settings.theme.background.clone()),
                                             ),
                                     )
                                     .child(
                                         div()
                                             .flex()
                                             .flex_col()
-                                            .gap(px(8.0))
+                                            .gap_2()
+                                            .child(div().child("Accent Color"))
                                             .child(
-                                                label()
-                                                    .text_color(rgb(0xcccccc))
-                                                    .text("Accent Color"),
-                                            )
-                                            .child(
-                                                input()
-                                                    .w(px(200.0))
+                                                div()
+                                                    .w_1_2()
                                                     .bg(rgb(0x1a1a1a))
-                                                    .text_color(rgb(0xffffff))
-                                                    .value(self.temp_settings.theme.accent.clone())
-                                                    .on_input(|value, cx| {
-                                                        self.temp_settings.theme.accent = value;
-                                                        cx.notify();
-                                                    }),
+                                                    .child(self.temp_settings.theme.accent.clone()),
                                             ),
                                     ),
                             )
@@ -243,58 +197,37 @@ impl Render for SettingsWindow {
                                 div()
                                     .flex()
                                     .flex_col()
-                                    .gap(px(16.0))
+                                    .gap_4()
                                     .child(
-                                        span()
-                                            .text_color(rgb(0xffffff))
+                                        div()
+                                            .text_lg()
                                             .font_weight(FontWeight::BOLD)
-                                            .font_size(px(16.0))
-                                            .text("Terminal"),
+                                            .child("Terminal"),
                                     )
                                     .child(
                                         div()
                                             .flex()
                                             .flex_col()
-                                            .gap(px(8.0))
+                                            .gap_2()
+                                            .child(div().child("Font Size"))
                                             .child(
-                                                label()
-                                                    .text_color(rgb(0xcccccc))
-                                                    .text("Font Size"),
-                                            )
-                                            .child(
-                                                input()
-                                                    .w(px(200.0))
+                                                div()
+                                                    .w_1_2()
                                                     .bg(rgb(0x1a1a1a))
-                                                    .text_color(rgb(0xffffff))
-                                                    .value(self.temp_settings.terminal.font_size.to_string())
-                                                    .on_input(|value, cx| {
-                                                        if let Ok(size) = value.parse::<f32>() {
-                                                            self.temp_settings.terminal.font_size = size;
-                                                            cx.notify();
-                                                        }
-                                                    }),
+                                                    .child(self.temp_settings.terminal.font_size.to_string()),
                                             ),
                                     )
                                     .child(
                                         div()
                                             .flex()
                                             .flex_col()
-                                            .gap(px(8.0))
+                                            .gap_2()
+                                            .child(div().child("Default Shell"))
                                             .child(
-                                                label()
-                                                    .text_color(rgb(0xcccccc))
-                                                    .text("Default Shell"),
-                                            )
-                                            .child(
-                                                input()
-                                                    .w(px(200.0))
+                                                div()
+                                                    .w_1_2()
                                                     .bg(rgb(0x1a1a1a))
-                                                    .text_color(rgb(0xffffff))
-                                                    .value(self.temp_settings.terminal.default_shell.clone())
-                                                    .on_input(|value, cx| {
-                                                        self.temp_settings.terminal.default_shell = value;
-                                                        cx.notify();
-                                                    }),
+                                                    .child(self.temp_settings.terminal.default_shell.clone()),
                                             ),
                                     ),
                             )
@@ -303,61 +236,41 @@ impl Render for SettingsWindow {
                                 div()
                                     .flex()
                                     .flex_col()
-                                    .gap(px(16.0))
+                                    .gap_4()
                                     .child(
-                                        span()
-                                            .text_color(rgb(0xffffff))
+                                        div()
+                                            .text_lg()
                                             .font_weight(FontWeight::BOLD)
-                                            .font_size(px(16.0))
-                                            .text("Agents"),
+                                            .child("Agents"),
                                     )
                                     .child(
                                         div()
                                             .flex()
                                             .flex_col()
-                                            .gap(px(8.0))
+                                            .gap_2()
                                             .child(
-                                                label()
+                                                div()
                                                     .flex()
                                                     .items_center()
-                                                    .gap(px(4.0))
+                                                    .gap_1()
                                                     .child(
-                                                        input()
-                                                            .r#type("checkbox")
-                                                            .checked(self.temp_settings.agents.auto_start)
-                                                            .on_change(|checked, cx| {
-                                                                self.temp_settings.agents.auto_start = checked;
-                                                                cx.notify();
-                                                            }),
-                                                    )
-                                                    .child(
-                                                        span()
-                                                            .text_color(rgb(0xcccccc))
-                                                            .text("Auto-start agents"),
+                                                        div()
+                                                            .child("Auto-start agents"),
                                                     ),
                                             )
                                             .child(
                                                 div()
                                                     .flex()
                                                     .flex_col()
-                                                    .gap(px(4.0))
+                                                    .gap_1()
                                                     .child(
-                                                        label()
-                                                            .text_color(rgb(0xcccccc))
-                                                            .text("Max Concurrent Agents"),
+                                                        div().child("Max Concurrent Agents"),
                                                     )
                                                     .child(
-                                                        input()
-                                                            .w(px(200.0))
+                                                        div()
+                                                            .w_1_2()
                                                             .bg(rgb(0x1a1a1a))
-                                                            .text_color(rgb(0xffffff))
-                                                            .value(self.temp_settings.agents.max_concurrent.to_string())
-                                                            .on_input(|value, cx| {
-                                                                if let Ok(max) = value.parse::<usize>() {
-                                                                    self.temp_settings.agents.max_concurrent = max;
-                                                                    cx.notify();
-                                                                }
-                                                            }),
+                                                            .child(self.temp_settings.agents.max_concurrent.to_string()),
                                                     ),
                                             ),
                                     ),
@@ -366,4 +279,3 @@ impl Render for SettingsWindow {
             )
     }
 }
-

@@ -1,6 +1,5 @@
 // use gpui::*; // Commented out for CLI version
 use std::sync::{Arc, Mutex};
-use std::thread;
 
 pub struct TTSEngine {
     enabled: bool,

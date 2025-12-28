@@ -6,12 +6,12 @@ use std::thread;
 
 pub struct Terminal {
     output: Arc<Mutex<String>>,
-    pty: Option<portable_pty::MasterPty>,
+    pty: Option<Box<dyn portable_pty::MasterPty + Send>>,
     writer: Option<Box<dyn Write + Send>>,
 }
 
 impl Terminal {
-    pub fn new(cx: &mut ViewContext<Terminal>) -> View<Self> {
+    pub fn new() -> Self {
         let output = Arc::new(Mutex::new(String::new()));
         let output_clone = output.clone();
 
@@ -31,7 +31,7 @@ impl Terminal {
             .spawn_command(cmd)
             .expect("Failed to spawn command");
 
-        let reader = pair.master.try_clone_reader().expect("Failed to clone reader");
+        let mut reader = pair.master.try_clone_reader().expect("Failed to clone reader");
         let writer = pair.master.take_writer().expect("Failed to take writer");
 
         // Spawn thread to read from PTY
@@ -51,20 +51,20 @@ impl Terminal {
             }
         });
 
-        cx.new_view(|_cx| Self {
+        Self {
             output,
-            pty: Some(pair.master),
+            pty: Some(Box::new(pair.master)),
             writer: Some(writer),
-        })
+        }
     }
 
     fn send_input(&mut self, input: &str, cx: &mut ViewContext<Self>) {
         if let Some(ref mut writer) = self.writer {
             if let Err(e) = writer.write_all(input.as_bytes()) {
-                eprintln!("Failed to write to PTY: {}", e);
+                // log::error!("Failed to write to PTY: {}", e);
             }
             if let Err(e) = writer.flush() {
-                eprintln!("Failed to flush PTY: {}", e);
+                // log::error!("Failed to flush PTY: {}", e);
             }
         }
         cx.notify();
@@ -72,7 +72,7 @@ impl Terminal {
 }
 
 impl Render for Terminal {
-    fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
+    fn render(&mut self, _cx: &mut ViewContext<Self>) -> impl IntoElement {
         let output = self.output.lock().unwrap().clone();
         let lines: Vec<&str> = output.lines().collect();
         let display_lines = if lines.len() > 100 {
@@ -88,9 +88,9 @@ impl Render for Terminal {
             .h_full()
             .bg(rgb(0x000000))
             .text_color(rgb(0x00ff00))
-            .font_family("Monaco")
-            .font_size(px(12.0))
-            .p(px(8.0))
+            .font("Monaco")
+            .text_size(px(12.0))
+            .p_2()
             .overflow_y_scroll()
             .child(
                 div()
@@ -99,8 +99,8 @@ impl Render for Terminal {
                     .children(display_lines.iter().map(|line| {
                         div()
                             .w_full()
-                            .text(line)
-                            .whitespace_pre()
+                            .child(line.to_string())
+                            .whitespace_nowrap()
                     })),
             )
     }
